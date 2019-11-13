@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, AsyncStorage,Alert, Keyboard } from 'react-native';
-
-import {Actions} from 'react-native-router-flux';
+import { StackNavigator } from 'react-navigation';
+import { createAppContainer } from 'react-navigation'
+import {Actions, Router} from 'react-native-router-flux';
 
 export default class Form extends Component {
 
@@ -85,26 +86,7 @@ export default class Form extends Component {
         }
         else if(this.props.type == 'Login')
         {
-            try{
-                let loginDetails = await AsyncStorage.getItem('loginDetails');
-                let ld = JSON.parse(loginDetails);
-
-                if (ld.email != null && ld.password != null)
-                {
-                    if (ld.email == email && ld.password == password)
-                    {
-                        alert('Go in!');
-                    }
-                    else
-                    {
-                        alert('Email and Password does not exist!');
-                    }
-                }
-
-            }catch(error)
-            {
-                alert(error);
-            }
+            
         }
     }
 
@@ -118,7 +100,7 @@ export default class Form extends Component {
         return(
             <View style={styles.container}>
                 <TextInput style={styles.inputBox}
-                onChangeText={(Name) => this.setState({Name})}
+                onChangeText={(Name) => this.setState({Name: Name})}
                 underlineColorAndroid='rgba(0,0,0,0)' 
                 placeholder="Name"
                 placeholderTextColor = "#002f6c"

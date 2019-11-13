@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema({
   },
   hash : String,
   salt : String,
+  Amount : Number,
   isDeleted:{
       type: Boolean,
       default: false

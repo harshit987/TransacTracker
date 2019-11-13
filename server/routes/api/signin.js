@@ -1,6 +1,8 @@
 const express = require('express');
 const router= express.Router();
 const User = require('../../models/User');
+const Transaction = require('../../models/transaction');
+
 const UserSession = require('../../models/UserSession');
 // module.exports = (app) => {
     // app.get('/api/counters', (req, res, next) => {
@@ -17,6 +19,139 @@ const UserSession = require('../../models/UserSession');
     //     .then(() => res.json(counter))
     //     .catch((err) => next(err));
     // });
+    router.post('/history',(req,res) =>{
+        const {body} = req;
+        const {
+            Name
+        } = body;
+        console.log(Name);
+        Transaction.find({
+            Payee : Name 
+        },(err,Users) => {
+            if(err){
+                return res.send({
+                    success: false,
+                    history : {'Error' : 'Network error'}
+                });
+            }
+            console.log(Users);
+            return res.send({
+                success : true,
+                Users
+            });
+           
+        } );
+    });
+    router.post('/pay',(req,res) => {
+        const {body} = req;
+        const {
+            PaidTo,
+            Payee,
+            Amount
+        } = body;
+        console.log(PaidTo);
+        if(!PaidTo){
+
+            return res.send({
+                success: false,
+                message : 'Error : PaidTo not given'
+            });
+        }
+        if(!Payee){
+            return res.send({
+                success: false,
+                message : 'Error : Payee not given'
+            });
+        }
+        if(!Amount){
+            return res.send({
+                success: false,
+                message : 'Error : Amount not given'
+            });
+        }
+        User.find({
+            Name : PaidTo
+        },(err,Users) => {
+            if(err){
+                return res.send({
+                    success: false,
+                    message : 'Error : PaidTo not signup'
+                });
+            }
+            // console.log(Users);
+            const user=Users[0];
+            // console.log(user.Amount)
+            // console.log(Amount)
+            NewAmount = Number(user.Amount) + Number(Amount);
+            // console.log(NewAmount);
+            User.findOneAndUpdate({
+                Name : PaidTo,
+            }, {
+                $set :{
+                    Amount : NewAmount
+                }
+            } , null,(err,sessions) => {
+                if(err){
+                    return res.send({
+                        success : false,
+                        message : 'Error: Server error'
+                    });
+                }
+                
+            });
+           
+        } );
+        User.find({
+            Name : Payee
+        },(err,Users) => {
+            if(err){
+                return res.send({
+                    success: false,
+                    message : 'Error : Payee not signup'
+                });
+            }
+            const user=Users[0];
+            const NewAmount = Number(user.Amount) - Number(Amount);
+            User.findOneAndUpdate({
+                Name : Payee,
+            }, {
+                $set :{
+                    Amount : NewAmount
+                }
+            } , null,(err,sessions) => {
+                if(err){
+                    return res.send({
+                        success : false,
+                        message : 'Error: Server error'
+                    });
+                }
+            });
+           
+           
+        } );
+        const newtransaction = new Transaction();
+        newtransaction.PaidTo=PaidTo;
+        newtransaction.Payee=Payee;
+        newtransaction.Amount=Amount;
+        console.log(PaidTo);
+        console.log(newtransaction.PaidTo,newtransaction.Payee,newtransaction.Amount);
+        newtransaction.save((err,result) =>{
+            if(err){
+                return res.send({
+                    success: false,
+                    message : 'Error : transaction not saved'
+                });
+            }
+            return res.send({
+                success: true,
+                message : 'Transaction saved'
+            });
+        });
+        
+        
+
+
+    });
     router.post('/signup',(req,res) => {
         const {body} = req;
         const {
@@ -24,6 +159,7 @@ const UserSession = require('../../models/UserSession');
             Roll_no,
             password
         } = body;
+        const Amount=10000;
         console.log("hello");
         console.log(req.body);
         console.log(req.body.Roll_no);
@@ -67,6 +203,7 @@ const UserSession = require('../../models/UserSession');
             newUser.Name=Name;
             newUser.Roll_no=Roll_no;
             newUser.generateHash(password);
+            newUser.Amount=Amount;
             newUser.save((err,user) =>{
                 if(err){
                     return res.send({
