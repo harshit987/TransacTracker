@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-var mongo_Url = 'mongodb://harshit987:h8a1r18s19@ds139934.mlab.com:39934/mydb'
+var mongo_Url = 'mongodb://username:password@dburl'
 mongoose.connect(
   mongo_Url,
   { useNewUrlParser: true }
